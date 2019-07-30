@@ -3,6 +3,8 @@
  */
 package spinner.sightly.use;
 
+import java.util.regex.Pattern;
+
 import javax.jcr.Node;
 import javax.script.Bindings;
 
@@ -46,11 +48,17 @@ public class UUIDResourceUseProvider implements UseProvider {
 				+ "Use-object. A higher value represents a higher priority.")
 		int service_ranking() default 70;
 	}
+	
+    private static final Pattern UUID_PATTERN = Pattern.compile("^[a-fA-F0-9]{8}-?[a-fA-F0-9]{4}-?[1-5][a-fA-F0-9]{3}-?[abAB89][a-fA-F0-9]{3}-?[a-fA-F0-9]{12}$");
 
 	@Override
 	public ProviderOutcome provide(String identifier, RenderContext renderContext, Bindings arguments) {
 		Logger logger = LoggerFactory.getLogger(this.getClass());
-		logger.debug("identifier (uuid) is " + identifier);
+		logger.debug("Identifier is {}", identifier);
+        if (!UUID_PATTERN.matcher(identifier).matches()) {
+            logger.debug("Identifier {} does not match a UUID name pattern.", identifier);
+            return ProviderOutcome.failure();
+        }
 
 		Bindings globalBindings = renderContext.getBindings();
 		SlingHttpServletRequest request = (SlingHttpServletRequest) globalBindings.get(SlingBindings.REQUEST);
